@@ -1,0 +1,7 @@
+body {
+    /* 不允许选取元素 */
+    user-select: none;
+    /* 通过body拖拽整个窗体，window需要开启titleBarOverlay */
+    -webkit-app-region: drag;
+    /* background-color: #6435c9; */
+}

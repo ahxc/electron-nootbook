@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'"
+  >
+  <!-- <title>测试!</title> -->
+  <link
+    rel="stylesheet"
+    href="./renderer/style.css"
+  >
+</head>
+
+<body>
+  <h1>你好!</h1>
+  我们正在使用 Node.js <span id="node-version"></span>,
+  Chromium <span id="chrome-version"></span>,
+  和 Electron <span id="electron-version"></span>.
+  <p id="info"></p>
+  <script src="./renderer/renderer.js"></script>
+  <button id="obtn">点击打开新窗口</button>
+</body>
+
+</html>
