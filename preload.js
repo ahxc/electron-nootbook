@@ -29,8 +29,40 @@ contextBridge.exposeInMainWorld('versions', {
     electron: () => process.versions.electron,
     // 不能直接暴露整个 ipcRenderer 模块，否则渲染器能够直接向主进程发送任意的 IPC 信息
     ping: () => {
-        // 暴露给渲染进程一个invoke注入，渲染进程调用注入，主进程即可接收二次调用。
+        // 暴露给渲染进程一个invoke注入，这样，渲染进程可以通过监听的方式给主进程。
         return ipcRenderer.invoke('ping');
     },
     // 除函数之外，我们也可以暴露变量
 });
+
+// 拿去主进程的资源
+ipcRenderer.on('SET_SOURCE', async (event, sourceId) => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'desktop',
+                    chromeMediaSourceId: sourceId,
+                    minWidth: 1280,
+                    maxWidth: 1280,
+                    minHeight: 720,
+                    maxHeight: 720
+                }
+            }
+        });
+        handleStream(stream);
+    } catch (e) {
+        handleError(e);
+    }
+});
+
+function handleStream(stream) {
+    const video = document.querySelector('video');
+    video.srcObject = stream;
+    video.onloadedmetadata = (e) => video.play();
+}
+
+function handleError(e) {
+    console.log(e);
+}

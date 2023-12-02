@@ -1,12 +1,15 @@
 const {
     app, BrowserWindow, ipcMain, Menu,
-    dialog, globalShortcut, } = require('electron');
+    dialog, globalShortcut, Tray, nativeImage, desktopCapturer } = require('electron');
 
 const path = require('node:path');
 const WinState = require('electron-win-state').default;
 
 // macOS
 const isMac = process.platform === 'darwin';
+
+const snowman_png = nativeImage.createFromPath('public/snowman.png');
+// const snowman_svg = nativeImage.createFromBitmap('public/vite.svg');
 
 // require("@electron/remote/main").initialize();
 
@@ -20,8 +23,9 @@ const winState = new WinState({
 // 而渲染进程在浏览器核心上，即网页页面。
 // 预加载是渲染进程的一部分，为了将 Electron 的不同类型的进程桥接在一起。新版沙河模式预加载失去了node.js环境。
 
+let win;
 const createWindow = () => {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         x: 100,
         y: 100,// 位置，屏幕左上角
         title: '测试',// html样式优先级更高
@@ -34,7 +38,7 @@ const createWindow = () => {
         frame: true, // 是否显示上边框，取消上边框，transparent才会生效
         transparent: false,
         // autoHideMenuBar: true, // 隐藏操作栏
-        icon: '',
+        icon: snowman_png,
         // titleBarOverlay: true, // 与frame配合，虽然无frame但还是透明覆盖dom区域，
         webPreferences: {
             // 渲染进程renderer里集成nodejs环境可编写nodejs代码
@@ -82,6 +86,18 @@ const createWindow = () => {
     // }); 
 };
 
+function captureVideo(params) {
+    // 桌面捕获，获取所有资源信息，并遍历发送id给预加载
+    desktopCapturer.getSources({ types: ['window', 'screen'] }).then((sources) => {
+        for (const source of sources) {
+            if (source.name === '测试') {
+                win.webContents.send('SET_SOURCE', source.id);
+                return;
+            }
+        }
+    });
+}
+
 // Electron 结束初始化和创建浏览器窗口的时候调用
 app.whenReady().then(() => {
     console.log('whenReady');
@@ -106,6 +122,23 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         };
+    });
+
+    // 托盘，状态栏图标
+    const icon = snowman_png;
+    tray = new Tray(icon);
+    // 托盘菜单
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Item1', type: 'radio' },
+        { label: 'Item2', type: 'radio' },
+        { label: 'Item3', type: 'radio', checked: true },
+        { label: 'Item4', type: 'radio' }
+    ]);
+    tray.setContextMenu(contextMenu); // 右击菜单
+    tray.setToolTip('帮助'); // 悬浮提示信息
+    tray.setTitle('工具栏');
+    tray.on('click', (e) => {// 点击显示
+        win.show();
     });
 });
 
